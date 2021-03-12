@@ -1,31 +1,49 @@
 package com.algaworks.os.api.controller;
 
+import com.algaworks.os.api.service.ClienteService;
+import com.algaworks.os.domain.dto.ClienteDTO;
+import com.algaworks.os.domain.dto.ClientePutDTO;
 import com.algaworks.os.domain.model.Cliente;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
+@RequiredArgsConstructor
 public class ClienteController {
 
+    private final ClienteService clienteService;
+
     @GetMapping
-    public List<Cliente> listar() {
-        var cliente1 = new Cliente();
-        cliente1.setId(1L);
-        cliente1.setNome("Lucas");
-        cliente1.setTelefone("11 912345678");
-        cliente1.setEmail("lucastengan@usp.br");
-
-        var cliente2 = new Cliente();
-        cliente2.setId(2L);
-        cliente2.setNome("Maria");
-        cliente2.setTelefone("11 43218765");
-        cliente2.setEmail("mariadasilva@usp.br");
-
-        return Arrays.asList(cliente1, cliente2);
+    public ResponseEntity<List<Cliente>> listarTodos() {
+        return ResponseEntity.ok(clienteService.lista());
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Cliente> buscaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(clienteService.buscaPorIdOuJogaBadRequestException(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Cliente> cadastraCliente(@RequestBody ClienteDTO clienteDTO) {
+        return new ResponseEntity<>(clienteService.save(clienteDTO), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        clienteService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> replace(@RequestBody ClientePutDTO clientePutDTO) {
+        clienteService.replace(clientePutDTO);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }
