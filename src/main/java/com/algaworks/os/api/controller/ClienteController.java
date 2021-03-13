@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -20,16 +21,16 @@ public class ClienteController {
 
     @GetMapping
     public ResponseEntity<List<Cliente>> listarTodos() {
-        return ResponseEntity.ok(clienteService.lista());
+        return new ResponseEntity<>(clienteService.lista(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Cliente> buscaPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(clienteService.buscaPorIdOuJogaBadRequestException(id));
+        return new ResponseEntity<>(clienteService.buscaPorIdOuJogaBadRequestException(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> cadastraCliente(@RequestBody ClienteDTO clienteDTO) {
+    public ResponseEntity<Cliente> cadastraCliente(@RequestBody @Valid ClienteDTO clienteDTO) {
         return new ResponseEntity<>(clienteService.save(clienteDTO), HttpStatus.CREATED);
     }
 
@@ -39,11 +40,10 @@ public class ClienteController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping
-    public ResponseEntity<Void> replace(@RequestBody ClientePutDTO clientePutDTO) {
-        clienteService.replace(clientePutDTO);
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PutMapping("/{id}")
+    public ResponseEntity<Cliente> replace(@PathVariable Long id, @RequestBody @Valid ClientePutDTO clientePutDTO) {
+        return new ResponseEntity<>(
+                clienteService.replace(id, clientePutDTO), HttpStatus.OK
+        );
     }
-
 }

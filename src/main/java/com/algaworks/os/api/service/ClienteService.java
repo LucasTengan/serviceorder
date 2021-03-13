@@ -1,14 +1,15 @@
 package com.algaworks.os.api.service;
 
+import com.algaworks.os.api.exceptionhandler.BadRequest;
+import com.algaworks.os.api.exceptionhandler.NegocioException;
 import com.algaworks.os.api.repository.ClienteRepository;
 import com.algaworks.os.domain.dto.ClienteDTO;
 import com.algaworks.os.domain.dto.ClientePutDTO;
 import com.algaworks.os.domain.model.Cliente;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Service
@@ -23,10 +24,12 @@ public class ClienteService {
 
     public Cliente buscaPorIdOuJogaBadRequestException(Long id) {
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client not Found"));
+                .orElseThrow(() -> new BadRequest("Cliente não encontrado"));
     }
 
     public Cliente save(ClienteDTO clienteDTO) {
+        Cliente clienteExistente = clienteRepository.findByEmail(clienteDTO.getEmail());
+        if(clienteExistente != null) throw new NegocioException("Cliente já existente");
         Cliente cliente = Cliente.builder()
                 .nome(clienteDTO.getNome())
                 .email(clienteDTO.getEmail())
@@ -36,17 +39,19 @@ public class ClienteService {
     }
 
     public void delete(Long id) {
-        clienteRepository.deleteById(id);
+        Cliente clienteProcurado = buscaPorIdOuJogaBadRequestException(id);
+
+        clienteRepository.delete(clienteProcurado);
     }
 
-    public void replace(ClientePutDTO clienteputDTO) {
-        Cliente savedClient = buscaPorIdOuJogaBadRequestException(clienteputDTO.getId());
+    public Cliente replace(Long id, @Valid ClientePutDTO clienteputDTO) {
+        Cliente savedClient = buscaPorIdOuJogaBadRequestException(id);
         Cliente cliente = Cliente.builder()
-                .id(savedClient.getId())
+                .id(savedClient.getId())    // é necessário fazer isso, caso contrário criará um novo cliente, e não irá atualizar
                 .nome(clienteputDTO.getNome())
                 .email(clienteputDTO.getEmail())
                 .telefone(clienteputDTO.getTelefone()).build();
 
-        clienteRepository.save(cliente);
+        return clienteRepository.save(cliente);
     }
 }
