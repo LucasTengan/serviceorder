@@ -1,10 +1,11 @@
 package com.algaworks.os.api.controller;
 
+import com.algaworks.os.api.model.ClienteModel;
 import com.algaworks.os.api.service.ClienteService;
-import com.algaworks.os.domain.dto.ClienteDTO;
-import com.algaworks.os.domain.dto.ClientePutDTO;
+import com.algaworks.os.api.model.ClienteInput;
 import com.algaworks.os.domain.model.Cliente;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteService clienteService;
+    private final ModelMapper modelMapper;
 
     @GetMapping
     public ResponseEntity<List<Cliente>> listarTodos() {
@@ -30,8 +32,10 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> cadastraCliente(@RequestBody @Valid ClienteDTO clienteDTO) {
-        return new ResponseEntity<>(clienteService.save(clienteDTO), HttpStatus.CREATED);
+    public ResponseEntity<ClienteModel> cadastraCliente(@RequestBody @Valid ClienteInput clienteInput) {
+        var cliente = toEntity(clienteInput);
+
+        return new ResponseEntity<>(toModel(clienteService.save(cliente)), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
@@ -41,9 +45,17 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> replace(@PathVariable Long id, @RequestBody @Valid ClientePutDTO clientePutDTO) {
+    public ResponseEntity<Cliente> replace(@PathVariable Long id, @RequestBody @Valid ClienteInput clienteInput) {
         return new ResponseEntity<>(
-                clienteService.replace(id, clientePutDTO), HttpStatus.OK
+                clienteService.replace(id, clienteInput), HttpStatus.OK
         );
+    }
+
+    private ClienteModel toModel(Cliente cliente) {
+        return modelMapper.map(cliente, ClienteModel.class);
+    }
+
+    private Cliente toEntity(ClienteInput clienteInput) {
+        return modelMapper.map(clienteInput, Cliente.class);
     }
 }

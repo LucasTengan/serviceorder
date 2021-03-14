@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 @ControllerAdvice
@@ -23,7 +23,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionProblem exceptionProblem = ExceptionProblem.builder()
                 .status(status.value())
                 .titulo(ex.getMessage())
-                .dataHora(LocalDateTime.now())
+                .dataHora(OffsetDateTime.now())
+                .build();
+
+        return handleExceptionInternal(ex, exceptionProblem, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(EntidadeNaoEncontradaException.class)
+    public ResponseEntity<Object> handleEntidadeNaoEncontrada(EntidadeNaoEncontradaException ex, WebRequest request) {
+        var status = HttpStatus.NOT_FOUND;
+        ExceptionProblem exceptionProblem = ExceptionProblem.builder()
+                .status(status.value())
+                .titulo(ex.getMessage())
+                .dataHora(OffsetDateTime.now())
                 .build();
 
         return handleExceptionInternal(ex, exceptionProblem, new HttpHeaders(), status, request);
@@ -44,7 +56,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(status.value())
                 .titulo("Um ou mais campos estão inválidos. " +
                         "Faça o preenchimento correto e tente novamente")
-                .dataHora(LocalDateTime.now())
+                .dataHora(OffsetDateTime.now())
                 .campos(campos)
                 .build();
 
