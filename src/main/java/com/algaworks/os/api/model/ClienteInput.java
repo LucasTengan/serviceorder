@@ -2,6 +2,7 @@ package com.algaworks.os.api.model;
 
 import com.algaworks.os.domain.model.Cliente;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ClienteInput {
 
     @NotBlank(message = "O nome do cliente não pode ser nulo ou vazio")
